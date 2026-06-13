@@ -1,12 +1,372 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Quicksand:wght@500;700&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap');
+
 @import 'tailwindcss';
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
+@theme {
+  --font-heading: 'Poppins', sans-serif;
+  --font-mono: 'Roboto', sans-serif;
+  --font-body: 'Roboto', sans-serif;
+  --font-quicksand: 'Quicksand', sans-serif;
+
+  --color-paper: var(--color-pure-white);
+  --color-paper-2: var(--color-warm-off-white);
+  --color-ink: var(--color-ink-black);
+  --color-muted: var(--color-muted-gray);
+  --color-violet: var(--color-primary-violet);
+  --color-violet-soft: var(--color-soft-lavender);
+  --color-rust: var(--color-deep-purple);
+  --color-blueprint: var(--color-deep-purple);
+  --color-line: var(--color-light-border);
+  --color-white-paper: var(--color-pure-white);
+
+  --color-primary-violet: #5B21D9;
+  --color-deep-purple: #3B168F;
+  --color-soft-lavender: #EEE7FF;
+  --color-ink-black: #111111;
+  --color-charcoal: #2F2F35;
+  --color-muted-gray: #6B6B76;
+  --color-pure-white: #ffffff;
+  --color-warm-off-white: #FAF8F3;
+  --color-light-border: #E8E3F5;
+  --color-spark-yellow: #F6C84C;
+  --color-cyan-accent: #00B7D8;
+
+  --shadow-panel: 0 20px 50px -24px rgba(44, 34, 20, 0.25);
+  --shadow-soft: 0 12px 30px -18px rgba(44, 34, 20, 0.18);
+}
+
+:root {
+  /* New Sparkovation Logo-Matched Color System */
+  --color-primary-violet: #5B21D9;
+  --color-deep-purple: #3B168F;
+  --color-soft-lavender: #EEE7FF;
+  --color-ink-black: #111111;
+  --color-charcoal: #2F2F35;
+  --color-muted-gray: #6B6B76;
+  --color-pure-white: #ffffff;
+  --color-warm-off-white: #FAF8F3;
+  --color-light-border: #E8E3F5;
+  --color-spark-yellow: #F6C84C;
+  --color-cyan-accent: #00B7D8;
+
+  /* Legacy Mappings */
+  --paper: var(--color-pure-white);
+  --paper-2: var(--color-warm-off-white);
+  --ink: var(--color-ink-black);
+  --muted: var(--color-charcoal);
+  --violet: var(--color-primary-violet);
+  --violet-soft: var(--color-soft-lavender);
+  --rust: var(--color-deep-purple);
+  --blueprint: var(--color-deep-purple);
+  --line: var(--color-light-border);
+  --white: var(--color-pure-white);
+
+  /* HSL parameters for components compatibility */
+  --background: 30 20% 98%;
+  --foreground: 240 10% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 13%;
+  --primary: 259 84% 49%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 259 40% 96%;
+  --secondary-foreground: 259 70% 33%;
+  --muted-foreground: 240 6% 44%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 259 40% 93%;
+  --input: 259 40% 93%;
+  --accent: 259 84% 49%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 259 84% 49%;
+}
+
+.dark {
+  /* Dark Mode Sparkovation Logo-Matched Color System */
+  --color-primary-violet: #8B5CF6; /* Brighter violet for dark background contrast */
+  --color-deep-purple: #1E1145;
+  --color-soft-lavender: #231942;
+  --color-ink-black: #FFFFFF;
+  --color-charcoal: #E2E0E6;
+  --color-muted-gray: #A7A5AF;
+  --color-pure-white: #130B24; /* Lighter container background in dark mode */
+  --color-warm-off-white: #0A0518; /* Main body dark background */
+  --color-light-border: #2C204D;
+  --color-spark-yellow: #F6C84C;
+  --color-cyan-accent: #38BDF8;
+
+  /* HSL parameters overrides for dark mode components */
+  --background: 260 60% 4%;
+  --foreground: 260 10% 90%;
+  --card: 260 50% 8%;
+  --card-foreground: 260 10% 90%;
+  --popover: 260 50% 6%;
+  --popover-foreground: 260 10% 90%;
+  --primary: 259 84% 59%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 260 40% 12%;
+  --secondary-foreground: 260 10% 90%;
+  --muted-foreground: 260 10% 70%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 260 30% 18%;
+  --input: 260 30% 18%;
+  --accent: 259 84% 59%;
+  --accent-foreground: 0 0% 100%;
+  --ring: 259 84% 59%;
+}
+
 html {
   scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* Base style overrides */
+body {
+  background-color: var(--color-warm-off-white);
+  color: var(--color-charcoal);
+  font-family: "Roboto", sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Poppins", sans-serif;
+  color: var(--color-ink-black);
+  font-weight: 600;
+}
+
+::selection {
+  background: rgba(91, 33, 217, 0.16);
+}
+
+/* Custom Components and Helper Classes */
+.section-shell {
+  border: 1px solid var(--color-light-border);
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 11px;
+}
+
+.section-divider-lab {
+  border-bottom: 1px solid var(--color-light-border);
+}
+
+.section-title {
+  font-family: "Poppins", sans-serif;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--color-ink-black);
+  font-weight: 600;
+}
+
+.section-copy {
+  font-family: "Roboto", sans-serif;
+  color: var(--color-charcoal);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.btn-lab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border: none;
+  background: var(--color-primary-violet);
+  color: var(--color-pure-white);
+  font-family: "Quicksand", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 36px;
+  box-shadow: rgba(91, 33, 217, 0.15) 0px 4px 12px 0px;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.btn-lab:hover {
+  background-color: var(--color-deep-purple);
+  transform: translateY(-2px);
+  box-shadow: rgba(91, 33, 217, 0.25) 0px 6px 16px 0px;
+}
+
+.btn-lab-light {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border: 2px solid var(--color-primary-violet);
+  background: var(--color-pure-white);
+  color: var(--color-primary-violet);
+  font-family: "Quicksand", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 36px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 8px 0px;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  will-change: transform, box-shadow;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.btn-lab-light:hover {
+  background-color: var(--color-soft-lavender);
+  color: var(--color-deep-purple);
+  border-color: var(--color-deep-purple);
+  transform: translateY(-2px);
+  box-shadow: rgba(91, 33, 217, 0.1) 0px 6px 12px 0px;
+}
+
+.stamp-lab {
+  display: inline-flex;
+  border: 1px solid var(--color-primary-violet);
+  color: var(--color-primary-violet);
+  padding: 6px 14px;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 36px;
+  background: rgba(91, 33, 217, 0.08);
+}
+
+.lab-board-lab {
+  position: relative;
+  min-height: 480px;
+  border: 1px solid var(--color-light-border);
+  border-radius: 11px;
+  background: var(--color-pure-white);
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 8px 32px 0px;
+  padding: 24px;
+}
+
+.photo-lab {
+  border: 1px solid var(--color-light-border);
+  border-radius: 11px;
+  background-size: cover;
+  background-position: center;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 24px 0px;
+}
+
+.featured-card {
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-light-border);
+  padding: 24px;
+  border-radius: 11px;
+  box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 16px 0px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.featured-card:hover {
+  transform: translateY(-2px);
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 8px 24px 0px;
+}
+
+.soft-card {
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-light-border);
+  padding: 24px;
+  border-radius: 11px;
+  box-shadow: rgba(0, 0, 0, 0.03) 0px 2px 8px 0px;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.soft-card:hover {
+  border-color: rgba(243, 111, 46, 0.25);
+  box-shadow: rgba(0, 0, 0, 0.08) 0px 4px 16px 0px;
+  transform: translateY(-1px);
+}
+
+.photo-frame {
+  border: 1px solid var(--color-light-border);
+  background: var(--color-pure-white);
+  padding: 8px;
+  border-radius: 11px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px 0px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.photo-frame:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 20px 0px;
+}
+
+.accent-note {
+  background: var(--color-warm-off-white);
+  border: 1px dashed var(--color-primary-violet);
+  padding: 20px;
+  border-radius: 11px;
+  box-shadow: rgba(0, 0, 0, 0.02) 0px 2px 8px 0px;
+  transform: rotate(-1.5deg);
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+
+.accent-note:hover {
+  transform: rotate(0deg) scale(1.02);
+  background-color: var(--color-pure-white);
+}
+
+.ticket-pass {
+  position: relative;
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-light-border);
+  border-radius: 11px;
+  box-shadow: rgba(0, 0, 0, 0.04) 0px 4px 12px 0px;
+  padding: 28px;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ticket-pass:hover {
+  border-color: rgba(243, 111, 46, 0.25);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 24px 0px;
+  transform: translateY(-2px);
+}
+
+.ticket-notch-left {
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-light-border);
+  border-radius: 9999px;
+  z-index: 10;
+}
+
+.ticket-notch-right {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: var(--color-pure-white);
+  border: 1px solid var(--color-light-border);
+  border-radius: 9999px;
+  z-index: 10;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
