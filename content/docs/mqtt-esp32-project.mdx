@@ -1,0 +1,227 @@
+---
+title: ESP32 MQTT Home Automation (Hands-on Project)
+description: ESP32 NodeMCU ko MQTT Broker se connect karke sensors data send karein aur LED/Relay status remote control karein.
+---
+
+Welcome to the **ESP32 MQTT Hands-on Project**! Abhi tak humne MQTT ke basic aur advanced concepts ko theory mein cover kiya. Ab baari hai actual hardware par ise implement karne ki!
+
+Is project mein, hum:
+1. ESP32 ko local Wi-Fi ke through ek public MQTT broker (`broker.hivemq.com`) se connect karenge.
+2. ESP32 se temperature data (mocked readings) regular intervals par publish karenge.
+3. Ek control topic ko subscribe karke built-in LED (GPIO 2) ko web terminal se remotely turn ON aur OFF karenge.
+
+---
+
+## 🛠️ Requirements & Parts List
+
+Is tutorial ko perform karne ke liye aapko niche diye gaye parts chahiye honge:
+
+* **ESP32 NodeMCU Board** (Microcontroller with built-in Wi-Fi).
+* **Micro USB Cable** (ESP32 ko system se connect aur flash karne ke liye).
+* **Arduino IDE** (Installed on your laptop).
+* **Built-in LED** (ESP32 ke Board par connected LED, typically GPIO 2).
+
+### Library Installation:
+Arduino IDE mein hume MQTT client use karne ke liye ek external library install karni padegi:
+1. Arduino IDE open karein.
+2. Go to **Sketch** ➡️ **Include Library** ➡️ **Manage Libraries**.
+3. Search bar mein type karein **PubSubClient** (by Nick O'Leary).
+4. **Install** par click karein.
+
+<Callout type="info">
+  **Note:** PubSubClient library sabse popular aur reliable MQTT client library hai Arduino ecosystem mein.
+</Callout>
+
+---
+
+## 🔌 Connection & Circuit Setup
+
+Is simple testing project ke liye aapko koi external wiring karne ki zaroorat nahi hai. Hum ESP32 ke onboard **Blue LED (GPIO 2)** ko control karenge.
+
+* **Onboard LED pin:** GPIO 2 (Kuch boards par ye Pin 2 or LED_BUILTIN ke naam se defined hota hai).
+
+Agar aap relay module connect karna chahte hain toh:
+* **Relay VCC** ➡️ **ESP32 Vin** (5V)
+* **Relay GND** ➡️ **ESP32 GND**
+* **Relay IN** ➡️ **ESP32 GPIO 2**
+
+---
+
+## 💻 Arduino Source Code
+
+Niche diye gaye code ko copy karke apne Arduino IDE mein paste karein. 
+
+Make sure ki aap code mein:
+* `ssid` aur `password` ki jagah apna Wi-Fi credentials dalein.
+* `client_id` (Line 18) mein custom string add karein taaki duplicate connection conflict na ho.
+
+```cpp title="esp32_mqtt_project.ino" {10, 11, 14, 18}
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// --- WiFi Configuration ---
+const char* ssid = "YOUR_WIFI_SSID";
+const char* password = "YOUR_WIFI_PASSWORD";
+
+// --- MQTT Broker Configuration ---
+// Hum HiveMQ ka free public broker use kar rahe hain
+const char* mqtt_broker = "broker.hivemq.com"; 
+const int mqtt_port = 1883;
+
+// --- MQTT Topics ---
+const char* publish_topic = "sparkovation/esp32/temp";
+const char* subscribe_topic = "sparkovation/esp32/led";
+
+// ESP32 Client Instance
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+const int ledPin = 2; // Onboard LED Pin
+unsigned long lastMsg = 0;
+float temperature = 24.0;
+
+void setup_wifi() {
+  delay(10);
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected!");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+// Callback Function: Jab subscribed topic par naya message aayega, ye function trigger hoga
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("]: ");
+  
+  String message = "";
+  for (int i = 0; i < length; i++) {
+    message += (char)payload[i];
+  }
+  Serial.println(message);
+
+  // Switch LED control logic
+  if (String(topic) == subscribe_topic) {
+    if (message == "ON") {
+      digitalWrite(ledPin, HIGH);
+      Serial.println("LED turned ON!");
+    } else if (message == "OFF") {
+      digitalWrite(ledPin, LOW);
+      Serial.println("LED turned OFF!");
+    }
+  }
+}
+
+// Reconnect Function: Agar Broker se connection loose ho jaye, toh reconnect karega
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    
+    // Unique Client ID create karein taaki connection clash na ho
+    String clientId = "ESP32Client-";
+    clientId += String(random(0xffff), HEX);
+    
+    if (client.connect(clientId.c_str())) {
+      Serial.println("connected!");
+      // Subscribed topic ko link karein
+      client.subscribe(subscribe_topic);
+      Serial.print("Subscribed to: ");
+      Serial.println(subscribe_topic);
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+  
+  Serial.begin(115200);
+  setup_wifi();
+  
+  client.setServer(mqtt_broker, mqtt_port);
+  client.setCallback(callback);
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop(); // Keep MQTT connection alive
+
+  unsigned long now = millis();
+  // Har 5 seconds mein temperature data publish karein
+  if (now - lastMsg > 5000) {
+    lastMsg = now;
+    
+    // Temperature change simulate karein (+/- 0.5 degrees)
+    temperature += random(-5, 6) / 10.0;
+    
+    // Float data ko string format mein convert karein
+    char tempString[8];
+    dtostrf(temperature, 1, 2, tempString);
+    
+    Serial.print("Publishing temperature: ");
+    Serial.println(tempString);
+    client.publish(publish_topic, tempString);
+  }
+}
+```
+
+---
+
+## 🔍 How to Test this Project?
+
+ESP32 par code upload karne ke baad testing ke liye hum Kisi web client ya desktop app ka use kar sakte hain. Subse best tools hain:
+
+### Method 1: Using HiveMQ Web Client (No Install)
+1. Apne browser par search karein **HiveMQ Websocket Client** ya [http://www.hivemq.com/demos/websocket-client/](http://www.hivemq.com/demos/websocket-client/) open karein.
+2. Connection settings default rehne dein aur **Connect** par click karein.
+3. **Subscriptions Panel** mein click karein *Add New Topic Subscription* par aur topic add karein: `sparkovation/esp32/temp`. Ab aapko har 5 seconds mein ESP32 ka live temperature numerical data yahan receive hota dikhega!
+4. **Publish Panel** mein topic likhein `sparkovation/esp32/led` aur message text input mein type karein `ON` (capital letters mein). **Publish** button dabaayein, aur ESP32 ki blue LED turn ON ho jayegi!
+5. Similarly `OFF` publish karke LED turn OFF karein.
+
+### Method 2: Using MQTT Explorer (Desktop Tool)
+Agar aap computer client chahte hain, toh **MQTT Explorer** app download karein. 
+* Broker Host: `broker.hivemq.com`
+* Port: `1883`
+* Connect dabayein aur aap directly pura topic tree interactively visual form mein check kar sakte hain!
+
+---
+
+## 🛠️ Common Troubleshooting Guide
+
+Agar aapko connection fail lagta hai, toh check karein:
+
+* **Error Code: `rc=-2` (Connection Failed):**
+  * **Reason:** Broker is unreachable. Check karein ki aapka home wifi router internet se connected hai ya nahi. HiveMQ public broker sometimes down bhi ho sakta hai.
+* **Error Code: `rc=-4` (Connection Timeout):**
+  * **Reason:** Firewall ya port blocking router side se ho sakti hai. Mobile Hotspot use karke test karein.
+* **WiFi not connecting (Infinite dots `....` on serial):**
+  * **Reason:** Check SSID and Password. Dhyaan rakhein ki ESP32 **5GHz Wi-Fi support nahi karta**, use strictly **2.4GHz Wi-Fi** connection hi dein.
+
+---
+
+## 🎉 Congratulations!
+
+Aapne successfully ek dynamic MQTT integration test kar liya hai. Ab aap real-time applications jaise home control hubs, logging platforms, aur smart monitors develop kar sakte hain!
+
+<Cards>
+  <Card title="🏠 Welcome Home" href="/docs/" />
+  <Card title="🔌 ESP32 Web Server Guide" href="/docs/esp32-webserver" />
+</Cards>

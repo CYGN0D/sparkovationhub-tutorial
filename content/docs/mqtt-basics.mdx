@@ -1,0 +1,80 @@
+---
+title: MQTT Protocol Kya Hai? (Basics & Architecture)
+description: IoT devices ke communication ke liye sabse lightweight protocol MQTT ko easy words mein aur visuals ke saath samajhein.
+---
+
+Welcome to the **MQTT Basics Guide**! Agar aap IoT (Internet of Things) aur smart home devices ke world mein enter kar rahe hain, toh **MQTT** ek aisa term hai jo aapko har jagah sunne ko miracle lag sakta hai, lekin ye hai bohot simple.
+
+Chaliye is guide mein hum MQTT ko bilkul simple aur human-friendly language mein samajhte hain, taaki aapko koi bhi confusion na rahe!
+
+---
+
+## 🧐 MQTT Kya Hai? (What is MQTT?)
+
+**MQTT** ka full form hai **Message Queuing Telemetry Transport**. Ye ek bahut hi **lightweight** aur simple network protocol hai jo devices ko aapas mein data exchange (communicate) karne mein help karta hai.
+
+Isse 1999 mein *Andy Stanford-Clark (IBM)* aur *Arlen Nipper (Arcom)* ne banaya tha. Unka goal tha ek aisa protocol banana jo:
+1. **Low Bandwidth** use kare (jahan internet connection slow ya unstable ho).
+2. **Low Power** consume kare (battery-powered sensors ke liye perfect).
+3. **Low Footprint** ho (taaki microcontrollers jaise ESP8266 aur ESP32 easily run kar sakein).
+
+<Callout type="info">
+  **Fun Fact:** MQTT ko starting mein oil pipelines ko satellite ke through monitor karne ke liye design kiya gaya tha, jahan data limits aur connection drops bohot common the. Aaj ye smart homes, connected cars, aur industrial IoT ka backbone ban chuka hai!
+</Callout>
+
+---
+
+## 🔄 Publish-Subscribe Pattern: Kaise Work Karta Hai?
+
+Standard websites HTTP use karti hain, jahan **Client-Server** model chalta hai (jaise browser request bhejta hai aur server response deta hai). 
+
+Lekin MQTT **Publish-Subscribe (Pub-Sub)** model par kaam karta hai. Ismein clients directly ek doosre se communicate nahi karte. Beech mein ek intermediate device hota hai jise hum **Broker** kehte hain.
+
+### 🏠 Real-Life Analogy: YouTube channels
+Isse samajhne ke liye YouTube ka example lete hain:
+* **Creator (Publisher):** Jab koi creator naya video upload (publish) karta hai standard topic "Tech Reviews" ke under.
+* **YouTube (Broker):** YouTube server notifications receive karta hai aur manage karta hai.
+* **Viewer (Subscriber):** Aapne agar "Tech Reviews" channel ko subscribe kiya hai, toh YouTube automatically aapko notification bhej dega. 
+
+Aapko creator ko baar-baar message karke puchna nahi padta ki "Naya video aaya kya?". YouTube khud hi data deliver kar deta hai!
+
+---
+
+## 🎨 MQTT Architecture Diagram
+
+Niche diye gaye diagram se aap clear samajh sakte hain ki kaise Client aur Broker aapas mein interact karte hain:
+
+<img src="/images/mqtt-architecture.jpg" alt="MQTT Publish-Subscribe Architecture" className="rounded-xl border my-6 w-full max-w-2xl mx-auto" />
+
+### Key Terminology:
+1. **MQTT Client:** Koi bhi device (jaise ESP32, Raspberry Pi, Mobile App, ya Laptop) jo MQTT ke through connected hai. Client data publish bhi kar sakta hai aur doosre data ko subscribe bhi kar sakta hai.
+2. **MQTT Broker:** Ye central server hai jo sabhi messages ko receive karta hai, filter karta hai, aur right subscribers tak forward karta hai. Examples: *Mosquitto, HiveMQ, EMQX, Adafruit IO*.
+3. **Publish (Pub):** Kisi device ke through broker ko data bhejna. For example, ESP32 temperature data (25°C) publish karta hai.
+4. **Subscribe (Sub):** Broker ko batana ki hume kisi specific topic ka data chahiye. For example, Mobile App temperature topic ko subscribe karta hai taaki live readings dikha sake.
+5. **Topic:** Ek simple path ya string (jaise folder structure) jise message categorize karne ke liye use kiya jata hai. (e.g., `home/livingroom/temp`).
+
+---
+
+## 📊 MQTT vs HTTP (Comparison)
+
+IoT projects ke liye hum HTTP ke badle MQTT kyun prefer karte hain? Chaliye comparison table se dekhte hain:
+
+| Feature | HTTP | MQTT |
+| --- | --- | --- |
+| **Model** | Request / Response (Client-Server) | Publish / Subscribe (Decoupled) |
+| **Header Size** | Large (~8KB or more) | Extremely Small (as low as 2 Bytes) |
+| **Power Consumption** | High (connection establish karne mein energy lagti hai) | Very Low (keeps connection open with tiny keep-alive packets) |
+| **Complexity** | High | Low & Lightweight |
+| **Delivery Guarantee** | Built on TCP but no custom delivery levels | QoS Levels (0, 1, 2) built-in |
+| **Best For** | Web pages, APIs, large file downloads | Low-power IoT sensors, real-time messaging |
+
+---
+
+## 🚀 What's Next?
+
+Ab jag aapne basic architecture samajh liya hai, chaliye aage badhte hain aur MQTT ke important concepts jaise **Topics, Wildcards, aur QoS (Quality of Service)** ko detail mein explore karte hain.
+
+<Cards>
+  <Card title="📚 MQTT Advanced Concepts (Topics, QoS & Retained)" href="/docs/mqtt-advanced-concepts" />
+  <Card title="🔌 ESP32 MQTT Hands-on Project" href="/docs/mqtt-esp32-project" />
+</Cards>

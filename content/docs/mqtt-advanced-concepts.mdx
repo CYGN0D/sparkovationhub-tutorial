@@ -1,0 +1,114 @@
+---
+title: Topics, Wildcards & QoS (MQTT Advanced)
+description: MQTT Topics ke rules, Wildcards (+ aur #) ka magic, aur Quality of Service (QoS) levels ko easily samjhein.
+---
+
+Welcome back! Pehli guide mein humne MQTT ka base samajh liya tha. Ab baari hai un features ko samajhne ki jo MQTT ko real mein super-powerful aur flexible banate hain. 
+
+Is guide mein hum **Topics, Wildcards, QoS Levels, Retained Messages, aur Last Will** ke baare mein baat karenge, bilkul simple aur humanized tarike se!
+
+---
+
+## 📂 MQTT Topics Structure
+
+MQTT mein data categorize karne ke liye paths use hote hain jinhe **Topics** kehte hain. Ye standard folders/directories ki tarah hote hain jo forward slash (`/`) se divided hote hain.
+
+For example, agar aapke ghar mein sensors hain, toh aap unke topics aise design kar sakte hain:
+* `myhome/livingroom/temperature`
+* `myhome/livingroom/humidity`
+* `myhome/kitchen/gas_sensor`
+
+### 💡 Topics ke important rules:
+1. **Case-Sensitive:** `myhome/light` aur `MyHome/Light` dono different topics hain.
+2. **UTF-8 Supported:** Aap topics mein text aur numbers use kar sakte hain, par empty space (`myhome/living room`) avoid karein. Spaces ki jagah underscore (`_`) ya hyphen (`-`) use karein.
+3. **No leading slash:** `/myhome/light` avoid karein kyunki ye start mein ek unnecessary empty level create karta hai. Hamesha `myhome/light` se start karein.
+
+---
+
+## 🃟 Wildcards: Multiple Topics ko Ek Saath Handle Karna
+
+Imagine karein aapke ghar mein 10 rooms hain aur sabhi rooms mein temperature sensors lage hain:
+* `home/room1/temp`
+* `home/room2/temp`
+* ...
+* `home/room10/temp`
+
+Agar aapko saare rooms ka temperature monitor karna hai, toh kya aap 10 alag subscriptions banayenge? Nahi! Yahin kaam aate hain **Wildcards**.
+
+MQTT do type ke wildcards support karta hai:
+
+### 1. Single-Level Wildcard (`+`)
+Ye topic hierarchy mein kisi **ek specific level** ko match karta hai.
+
+* **Pattern:** `home/+/temp`
+* **Kya match hoga?**
+  * ✅ `home/room1/temp`
+  * ✅ `home/room2/temp`
+  * ✅ `home/kitchen/temp`
+* **Kya match nahi hoga?**
+  * ❌ `home/room1/floor2/temp` (Kyunki ismein "+" ke badle do levels aa gaye).
+
+### 2. Multi-Level Wildcard (`#`)
+Ye topic level ke end mein lagta hai aur uske **aage ke sabhi sub-levels** ko match karta hai.
+
+* **Pattern:** `home/#`
+* **Kya match hoga?**
+  * ✅ `home/room1/temp`
+  * ✅ `home/kitchen/light/status`
+  * ✅ `home/livingroom/ac/speed/value`
+* **Note:** `#` hamesha topic ke end mein hi lag sakta hai. Aap `home/#/temp` nahi likh sakte.
+
+<img src="/images/mqtt-wildcards.jpg" alt="MQTT Topics and Wildcards Diagram" className="rounded-xl border my-6 w-full max-w-2xl mx-auto" />
+
+---
+
+## ⚡ Quality of Service (QoS) Levels
+
+MQTT mein teen types ke QoS (Quality of Service) levels hote hain jo message delivery ki reliability decide karte hain. 
+
+<img src="/images/mqtt-qos-levels.jpg" alt="MQTT Quality of Service Levels" className="rounded-xl border my-6 w-full max-w-2xl mx-auto" />
+
+Chaliye simple words mein samajhte hain:
+
+### 🔴 QoS 0: At most once (Fire & Forget)
+* **Kaise kaam karta hai?** Publisher ek baar message send karta hai aur bhool jata hai. Koi acknowledgement nahi milti.
+* **Pros:** Sabse fast hai aur network bandwidth sabse kam leta hai.
+* **Cons:** Agar receiver offline hai ya network down hai, toh message loss ho jayega.
+* **Best For:** Regular sensor readings (jaise temperature har 10 seconds mein send karna, jahan 1-2 readings miss hone par bhi farq nahi padta).
+
+### 🟢 QoS 1: At least once (Acknowledged Delivery)
+* **Kaise kaam karta hai?** Message tab tak baar-baar bheja jata hai jab tak receiver se acknowledgement (PUBACK) nahi mil jati.
+* **Pros:** Message pakka deliver hoga, loss hone ka koi chance nahi.
+* **Cons:** Receiver ko duplicate messages mil sakte hain agar ack message network drop ki wajah se beech mein phas jaye.
+* **Best For:** Critical commands (jaise relay status control, switch light, garage door command).
+
+### 🔵 QoS 2: Exactly once (Assured Delivery)
+* **Kaise kaam karta hai?** Ek complex 4-way handshake protocol use hota hai jisse ye ensure kiya jata hai ki message deliver ho aur **sirf ek hi baar** process ho (no duplicates).
+* **Pros:** Highly reliable, koi data duplication ya loss nahi.
+* **Cons:** Heavy protocol hai aur transmission speed slow hoti hai.
+* **Best For:** Banking systems, billing/payment alerts, aur industrial IoT automation commands jahan double activation disaster create kar sakta hai.
+
+---
+
+## 🛡️ Special Features: Retained & Last Will
+
+MQTT protocol mein do special feature hote hain jo devices ke sudden connection breakdown aur initialization ko handle karte hain:
+
+### 1. Retained Messages (Last Known Good Value)
+Normally, jab koi device message publish karta hai, toh broker use subscribers ko deliver karke delete kar deta hai. Agar koi naya subscriber baad mein join karein, toh use purana message nahi milta.
+Agar aap message ko **Retained** mark karke publish karte hain, toh Broker use apne memory mein save rakhta hai. Jab bhi koi naya device us topic ko subscribe karega, broker use immediate latest value bhej dega!
+
+### 2. Last Will and Testament (LWT)
+LWT ek tareeka hai jisse ek client broker ke paas apni "wasiyat" chor deta hai. 
+* Connection establish karte waqt Client broker ko bolta hai: *"Agar mera connection suddenly kat jaye (due to power cut or network loss), toh mere behalf par ye message topic `home/status` par publish kar dena: 'Offline'."*
+* Broker client ke network activity ko monitor karta hai. Agar connection suddenly close ho jaye, toh broker immediately baki devices ko update kar deta hai.
+
+---
+
+## 🚀 Ready for Action?
+
+Ab humne theoretical concepts fully cover kar liye hain! Chaliye ab ek working project banate hain jismein hum **ESP32 NodeMCU** ko local wifi se connect karke ek free MQTT broker par publish aur subscribe karwayenge.
+
+<Cards>
+  <Card title="🔌 ESP32 MQTT Hands-on Project" href="/docs/mqtt-esp32-project" />
+</Cards>

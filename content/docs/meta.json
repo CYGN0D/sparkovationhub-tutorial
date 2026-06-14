@@ -3,6 +3,9 @@
   "pages": [
     "index",
     "esp32-webserver",
+    "mqtt-basics",
+    "mqtt-advanced-concepts",
+    "mqtt-esp32-project",
     "test"
   ]
 }
