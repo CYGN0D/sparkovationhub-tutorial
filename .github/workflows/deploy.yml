@@ -1,0 +1,36 @@
+name: Deploy Blog
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: blog-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+
+            cd /home/sparkovationhub-blog/htdocs/blog.sparkovationhub.com
+
+            git pull origin main
+
+            npm ci
+
+            npm run build
+
+            pm2 restart sparkovationhub-blog
+
+            pm2 save
