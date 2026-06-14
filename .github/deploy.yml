@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,8 +21,16 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
+            set -e
+
             cd /home/sparkovationhub-blog/htdocs/blog.sparkovationhub.com
 
             git pull origin main
+
             npm ci
+
             npm run build
+
+            pm2 restart sparkovationhub-blog
+
+            pm2 save
