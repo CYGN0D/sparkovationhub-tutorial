@@ -1,4 +1,4 @@
-name: Deploy Blog
+name: Deploy Next.js Blog
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 concurrency:
-  group: blog-production
+  group: production-deploy
   cancel-in-progress: true
 
 jobs:
@@ -20,7 +20,14 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          port: 22
+          timeout: 60s
+          command_timeout: 30m
           script: |
+
+            echo "🚀 Connecting to server..."
+
+            # Load NVM (IMPORTANT for Node 22)
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
@@ -31,12 +38,18 @@ jobs:
 
             cd /home/sparkovationhub-blog/htdocs/blog.sparkovationhub.com
 
+            echo "📥 Pulling latest code..."
             git pull origin main
 
+            echo "📦 Installing dependencies..."
             npm ci
 
+            echo "🏗️ Building Next.js..."
             npm run build
 
+            echo "🔄 Restarting PM2 app..."
             pm2 restart sparkovationhub-blog
 
             pm2 save
+
+            echo "✅ Deployment completed"
