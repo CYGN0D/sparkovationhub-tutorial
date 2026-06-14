@@ -1,62 +1,62 @@
 ---
 title: Topics, Wildcards & QoS (MQTT Advanced)
-description: MQTT Topics ke rules, Wildcards (+ aur #) ka magic, aur Quality of Service (QoS) levels ko easily samjhein.
+description: Master MQTT topic structures, wildcard matching, Quality of Service (QoS) levels, and advanced messaging options.
 ---
 
-Welcome back! Pehli guide mein humne MQTT ka base samajh liya tha. Ab baari hai un features ko samajhne ki jo MQTT ko real mein super-powerful aur flexible banate hain. 
+Welcome back! Now that we have covered the basics of MQTT architecture, it is time to explore the advanced features that make MQTT incredibly flexible and reliable. 
 
-Is guide mein hum **Topics, Wildcards, QoS Levels, Retained Messages, aur Last Will** ke baare mein baat karenge, bilkul simple aur humanized tarike se!
+In this guide, we will examine **Topics, Wildcards, QoS Levels, Retained Messages, and Last Will & Testament (LWT)** in detail.
 
 ---
 
 ## 📂 MQTT Topics Structure
 
-MQTT mein data categorize karne ke liye paths use hote hain jinhe **Topics** kehte hain. Ye standard folders/directories ki tarah hote hain jo forward slash (`/`) se divided hote hain.
+In MQTT, messages are sent to specific addresses called **Topics**. Topics are plain text strings separated by forward slashes (`/`), forming a hierarchical directory-like structure.
 
-For example, agar aapke ghar mein sensors hain, toh aap unke topics aise design kar sakte hain:
+For example, a home automation system might structure topics like this:
 * `myhome/livingroom/temperature`
 * `myhome/livingroom/humidity`
 * `myhome/kitchen/gas_sensor`
 
-### 💡 Topics ke important rules:
-1. **Case-Sensitive:** `myhome/light` aur `MyHome/Light` dono different topics hain.
-2. **UTF-8 Supported:** Aap topics mein text aur numbers use kar sakte hain, par empty space (`myhome/living room`) avoid karein. Spaces ki jagah underscore (`_`) ya hyphen (`-`) use karein.
-3. **No leading slash:** `/myhome/light` avoid karein kyunki ye start mein ek unnecessary empty level create karta hai. Hamesha `myhome/light` se start karein.
+### 💡 Crucial Topic Rules:
+1. **Case-Sensitivity:** `myhome/light` and `MyHome/Light` are treated as two completely different topics.
+2. **UTF-8 Support:** While you can use spaces (e.g., `myhome/living room`), it is highly discouraged as it makes debugging harder. Use underscores (`_`) or hyphens (`-`) instead.
+3. **Avoid Leading Slashes:** Do not start a topic with a slash (e.g., `/myhome/light`). This creates an empty root level and wastes resources. Always start directly: `myhome/light`.
 
 ---
 
-## 🃟 Wildcards: Multiple Topics ko Ek Saath Handle Karna
+## 🃟 Wildcards: Filtering Multiple Topics
 
-Imagine karein aapke ghar mein 10 rooms hain aur sabhi rooms mein temperature sensors lage hain:
+Imagine a house with 10 rooms, each containing a temperature sensor:
 * `home/room1/temp`
 * `home/room2/temp`
 * ...
 * `home/room10/temp`
 
-Agar aapko saare rooms ka temperature monitor karna hai, toh kya aap 10 alag subscriptions banayenge? Nahi! Yahin kaam aate hain **Wildcards**.
+If you wanted to subscribe to all of these sensors, you wouldn't want to create 10 separate subscriptions. Instead, MQTT provides **Wildcards** to subscribe to multiple topics at once.
 
-MQTT do type ke wildcards support karta hai:
+MQTT supports two types of wildcards:
 
 ### 1. Single-Level Wildcard (`+`)
-Ye topic hierarchy mein kisi **ek specific level** ko match karta hai.
+This wildcard matches exactly **one topic level** in the middle of a path.
 
 * **Pattern:** `home/+/temp`
-* **Kya match hoga?**
+* **Matches:**
   * ✅ `home/room1/temp`
   * ✅ `home/room2/temp`
   * ✅ `home/kitchen/temp`
-* **Kya match nahi hoga?**
-  * ❌ `home/room1/floor2/temp` (Kyunki ismein "+" ke badle do levels aa gaye).
+* **Does NOT Match:**
+  * ❌ `home/room1/floor2/temp` (because it has two levels where the `+` is).
 
 ### 2. Multi-Level Wildcard (`#`)
-Ye topic level ke end mein lagta hai aur uske **aage ke sabhi sub-levels** ko match karta hai.
+This wildcard matches **all remaining levels** of a topic path. It must always be placed at the very end of a topic.
 
 * **Pattern:** `home/#`
-* **Kya match hoga?**
+* **Matches:**
   * ✅ `home/room1/temp`
   * ✅ `home/kitchen/light/status`
   * ✅ `home/livingroom/ac/speed/value`
-* **Note:** `#` hamesha topic ke end mein hi lag sakta hai. Aap `home/#/temp` nahi likh sakte.
+* **Rule:** You cannot use `#` in the middle of a topic (e.g., `home/#/temp` is invalid).
 
 <img src="/images/mqtt-wildcards.jpg" alt="MQTT Topics and Wildcards Diagram" className="rounded-xl border my-6 w-full max-w-2xl mx-auto" />
 
@@ -64,50 +64,48 @@ Ye topic level ke end mein lagta hai aur uske **aage ke sabhi sub-levels** ko ma
 
 ## ⚡ Quality of Service (QoS) Levels
 
-MQTT mein teen types ke QoS (Quality of Service) levels hote hain jo message delivery ki reliability decide karte hain. 
+Quality of Service (QoS) determines the reliability of message delivery between clients and the broker. MQTT has three levels:
 
 <img src="/images/mqtt-qos-levels.jpg" alt="MQTT Quality of Service Levels" className="rounded-xl border my-6 w-full max-w-2xl mx-auto" />
 
-Chaliye simple words mein samajhte hain:
-
 ### 🔴 QoS 0: At most once (Fire & Forget)
-* **Kaise kaam karta hai?** Publisher ek baar message send karta hai aur bhool jata hai. Koi acknowledgement nahi milti.
-* **Pros:** Sabse fast hai aur network bandwidth sabse kam leta hai.
-* **Cons:** Agar receiver offline hai ya network down hai, toh message loss ho jayega.
-* **Best For:** Regular sensor readings (jaise temperature har 10 seconds mein send karna, jahan 1-2 readings miss hone par bhi farq nahi padta).
+* **How it works:** The publisher sends the message once, and the broker does not send an acknowledgment. There is no retry logic.
+* **Pros:** Fastest delivery with minimal network overhead.
+* **Cons:** If a client goes offline or the network drops, the message is lost.
+* **Best For:** Frequent, non-critical sensor readings (e.g., temperature telemetry sent every 10 seconds, where missing a single reading is fine).
 
 ### 🟢 QoS 1: At least once (Acknowledged Delivery)
-* **Kaise kaam karta hai?** Message tab tak baar-baar bheja jata hai jab tak receiver se acknowledgement (PUBACK) nahi mil jati.
-* **Pros:** Message pakka deliver hoga, loss hone ka koi chance nahi.
-* **Cons:** Receiver ko duplicate messages mil sakte hain agar ack message network drop ki wajah se beech mein phas jaye.
-* **Best For:** Critical commands (jaise relay status control, switch light, garage door command).
+* **How it works:** The publisher sends the message and waits for an acknowledgment (PUBACK) from the receiver. If none is received, it sends the message again.
+* **Pros:** Guarantees that the message will reach its destination.
+* **Cons:** The receiver might get duplicate messages if the acknowledgment was lost in transit.
+* **Best For:** Critical control commands (e.g., turning a light relay ON or OFF).
 
 ### 🔵 QoS 2: Exactly once (Assured Delivery)
-* **Kaise kaam karta hai?** Ek complex 4-way handshake protocol use hota hai jisse ye ensure kiya jata hai ki message deliver ho aur **sirf ek hi baar** process ho (no duplicates).
-* **Pros:** Highly reliable, koi data duplication ya loss nahi.
-* **Cons:** Heavy protocol hai aur transmission speed slow hoti hai.
-* **Best For:** Banking systems, billing/payment alerts, aur industrial IoT automation commands jahan double activation disaster create kar sakta hai.
+* **How it works:** Uses a 4-step handshake protocol between the sender and receiver to guarantee the message is delivered exactly once with no duplicates.
+* **Pros:** Safest and most reliable level.
+* **Cons:** Highest overhead and slowest delivery speed.
+* **Best For:** Financial applications, billing systems, and critical industrial actuators where duplicate execution could cause system damage.
 
 ---
 
-## 🛡️ Special Features: Retained & Last Will
+## 🛡️ Special Features: Retained Messages & Last Will
 
-MQTT protocol mein do special feature hote hain jo devices ke sudden connection breakdown aur initialization ko handle karte hain:
+MQTT includes native features to handle device disconnects and initialization state:
 
-### 1. Retained Messages (Last Known Good Value)
-Normally, jab koi device message publish karta hai, toh broker use subscribers ko deliver karke delete kar deta hai. Agar koi naya subscriber baad mein join karein, toh use purana message nahi milta.
-Agar aap message ko **Retained** mark karke publish karte hain, toh Broker use apne memory mein save rakhta hai. Jab bhi koi naya device us topic ko subscribe karega, broker use immediate latest value bhej dega!
+### 1. Retained Messages
+Typically, when a message is published, the broker sends it to subscribers and discards it. If a new subscriber connects later, it won't get any data until the next publish.
+By marking a message as **Retained**, the broker stores the last published message for that topic. As soon as a new client subscribes, the broker immediately sends this stored message.
 
 ### 2. Last Will and Testament (LWT)
-LWT ek tareeka hai jisse ek client broker ke paas apni "wasiyat" chor deta hai. 
-* Connection establish karte waqt Client broker ko bolta hai: *"Agar mera connection suddenly kat jaye (due to power cut or network loss), toh mere behalf par ye message topic `home/status` par publish kar dena: 'Offline'."*
-* Broker client ke network activity ko monitor karta hai. Agar connection suddenly close ho jaye, toh broker immediately baki devices ko update kar deta hai.
+LWT acts as a client's "emergency contact" update. 
+* When connecting, a client gives the broker an LWT topic and message (e.g., Topic: `home/status`, Message: `offline`).
+* If the client disconnects unexpectedly (due to power loss, network failure, etc.), the broker automatically publishes the LWT message on the client's behalf to notify other devices.
 
 ---
 
-## 🚀 Ready for Action?
+## 🚀 Let's Build a Project!
 
-Ab humne theoretical concepts fully cover kar liye hain! Chaliye ab ek working project banate hain jismein hum **ESP32 NodeMCU** ko local wifi se connect karke ek free MQTT broker par publish aur subscribe karwayenge.
+With the theory complete, let's put it into practice. In the next guide, we will connect an **ESP32 NodeMCU** to a free public MQTT broker to publish temperature values and subscribe to control an LED.
 
 <Cards>
   <Card title="🔌 ESP32 MQTT Hands-on Project" href="/docs/mqtt-esp32-project" />
