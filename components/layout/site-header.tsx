@@ -47,7 +47,7 @@ const navItems: NavItem[] = [
       { label: "Gallery", href: "/gallery", desc: "Lab moments, workshops and project photos" },
       { label: "Achievements", href: "/achievements", desc: "Awards, recognitions and media records" },
       { label: "Events / Workshops", href: "/events", desc: "Upcoming and completed learning sessions" },
-      { label: "Learning Hub", href: "/blogs", desc: "Explore beginner-friendly notes, project ideas & tutorials" },
+      { label: "Learning Hub", href: "/docs", desc: "Explore beginner-friendly notes, project ideas & tutorials" },
       { label: "Notices & Announcements", href: "/notices", desc: "Official academic, admission & examination notices" },
     ],
   },

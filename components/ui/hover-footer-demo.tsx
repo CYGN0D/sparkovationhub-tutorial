@@ -110,7 +110,7 @@ function HoverFooter() {
         { label: "Innovation Camps", href: "/camps" },
         { label: "Projects Explorer", href: "/projects" },
         { label: "Lab Gallery", href: "/gallery" },
-        { label: "Learning Hub", href: "/blogs" },
+        { label: "Learning Hub", href: "/docs" },
         { label: "Book Free Demo", href: "/contact", pulse: true },
       ],
     },
